@@ -4,10 +4,21 @@ This library is a demonstration of how MobX fine grain control can be leveraged 
 
 It accomplishes this with using [Babel Plugin JSX DOM Expressions](https://github.com/ryansolid/babel-plugin-jsx-dom-expressions). It compiles JSX to DOM statements and wraps expressions in functions that can be called by the library of choice. In this case autorun wrap these expressions ensuring the view stays up to date. Unlike Virtual DOM only the changed nodes are affected and the whole tree is not re-rendered over and over.
 
-To use simply import the package as r:
+To use simply import r:
 
 ```js
-import r from 'mob-jsx'
+import { r } from 'mob-jsx'
 ```
 
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
+
+## Helpers
+
+### each(fn, mapFn)
+### when(fn, mapFn)
+
+These are memoized helpers for rendering loops and conditionals. The first function is a selector that returns the list or the condition to render, and the second function is the mapping function.
+
+```jsx
+each(() => state.list, (item) => <div>{item.text}</div>)
+```
