@@ -4,11 +4,8 @@ import { autorun, computed, untracked } from 'mobx'
 let globalContext = null;
 export const r = createRuntime({
   wrap(fn) {
-    let dispose;
-    if (fn.length) {
-      let current;
-      dispose = autorun(() => current = fn(current))
-    } else dispose = autorun(fn);
+    let current,
+      dispose = autorun(() => current = fn(current));
     cleanup(dispose);
   }
 })
@@ -146,13 +143,11 @@ export function each(obsv, mapFn) {
         if (newMapped.hasOwnProperty(j)) {
           mapped[j] = newMapped[j];
           disposables[j] = tempDisposables[j];
-        } else {
-          mapped[j] = root(mappedFn);
-        }
+        } else mapped[j] = root(mappedFn);
         j++;
       }
       // truncate extra length
-      length = mapped.length = newLength;
+      length = mapped.length = disposables.length = newLength;
       // save list for next iteration
       list = newList.slice(0);
     }
@@ -169,12 +164,17 @@ export function each(obsv, mapFn) {
 // ***************
 // Selection handlers
 // ***************
+function createHandler(className) {
+  return (e, s) => e.classList.toggle(className, s)
+}
+
 function shallowDiff(a, b) {
   let sa = new Set(a), sb = new Set(b);
   return [a.filter(i => !sb.has(i)), (b.filter(i => !sa.has(i)))];
 }
 
 export function selectWhen(obsv, handler) {
+  if (typeof handler === 'string') handler = createHandler(handler);
   return list => {
     let element = null;
     const dispose = autorun(() => {
@@ -188,6 +188,7 @@ export function selectWhen(obsv, handler) {
 }
 
 export function selectEach(obsv, handler) {
+  if (typeof handler === 'string') handler = createHandler(handler);
   return list => {
     let elements = [];
     const dispose = autorun(() => {
