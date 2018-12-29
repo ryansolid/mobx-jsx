@@ -12,13 +12,16 @@ import { r } from 'mob-jsx'
 
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
 
-## Helpers
+## API
 
-### each(fn, mapFn)
-### when(fn, mapFn)
-
-These are memoized helpers for rendering loops and conditionals. The first function is a selector that returns the list or the condition to render, and the second function is the mapping function.
+Control flow is handled through a special $ JSX element that compiles down to optimized reconciled code that supports conditionals `when` and loops `each`. Example:
 
 ```jsx
-each(() => state.list, (item) => <div>{item.text}</div>)
+const list = ko.observableArray(["Alpha", "Beta", "Gamma"])
+
+<ul>
+  <$ each={state.list}>{item => <li>{item}</li>}</$>
+</ul>
 ```
+
+Further documentation available at: [Babel Plugin JSX DOM Expressions](https://github.com/ryansolid/babel-plugin-jsx-dom-expressions)
