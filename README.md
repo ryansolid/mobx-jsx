@@ -17,7 +17,7 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 Control flow is handled through a special $ JSX element that compiles down to optimized reconciled code that supports conditionals `when` and loops `each`. Example:
 
 ```jsx
-const list = ko.observableArray(["Alpha", "Beta", "Gamma"])
+const list = observable(["Alpha", "Beta", "Gamma"]);
 
 <ul>
   <$ each={state.list}>{item => <li>{item}</li>}</$>
