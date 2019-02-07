@@ -23,5 +23,9 @@ const list = observable(["Alpha", "Beta", "Gamma"]);
   <$ each={state.list}>{item => <li>{item}</li>}</$>
 </ul>
 ```
+This libray supports HyperScript instead of JSX albeit at a perform cost include by:
+```js
+import { h } from 'mobx-jsx'
+```
 
 Further documentation available at: [Babel Plugin JSX DOM Expressions](https://github.com/ryansolid/babel-plugin-jsx-dom-expressions)
