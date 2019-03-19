@@ -14,7 +14,7 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 ## API
 
-Control flow is handled through a special $ JSX element that compiles down to optimized reconciled code that supports conditionals `when` and loops `each`. Example:
+Control flow is handled through a special $ JSX element that compiles down to optimized reconciled code that supports conditionals `when`, loops `each`, separate render trees `portal`, and async offscreen rendering `suspend`. Example:
 
 ```jsx
 const list = observable(["Alpha", "Beta", "Gamma"]);
