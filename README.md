@@ -12,6 +12,12 @@ import { r } from 'mob-jsx'
 
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
 
+# Installation
+
+```sh
+> npm install mobx-jsx babel-plugin-jsx-dom-expressions
+```
+
 ## API
 
 Control flow is handled through a special $ JSX element that compiles down to optimized reconciled code that supports conditionals `when`, loops `each`, separate render trees `portal`, and async offscreen rendering `suspend`. Example:
@@ -23,9 +29,9 @@ const list = observable(["Alpha", "Beta", "Gamma"]);
   <$ each={state.list}>{item => <li>{item}</li>}</$>
 </ul>
 ```
-This libray supports HyperScript instead of JSX albeit at a perform cost include by:
+This library supports HyperScript instead of JSX albeit at a performance cost include by:
 ```js
 import { h } from 'mobx-jsx'
 ```
 
-Further documentation available at: [Babel Plugin JSX DOM Expressions](https://github.com/ryansolid/babel-plugin-jsx-dom-expressions)
+Further documentation available at: [DOM Expressions](https://github.com/ryansolid/dom-expressions)

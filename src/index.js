@@ -1,4 +1,4 @@
-import { createRuntime, createHyperScript } from 'babel-plugin-jsx-dom-expressions'
+import { createRuntime, createHyperScript } from 'dom-expressions'
 import { autorun, untracked } from 'mobx'
 
 let globalContext = null;
