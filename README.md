@@ -7,7 +7,7 @@ It accomplishes this with using [Babel Plugin JSX DOM Expressions](https://githu
 To use simply import r:
 
 ```js
-import { r } from 'mob-jsx'
+import { r } from 'mobx-jsx'
 ```
 
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
