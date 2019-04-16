@@ -1,4 +1,4 @@
-import { createRuntime, createHyperScript } from 'dom-expressions'
+import { createRuntime } from 'dom-expressions'
 import { autorun, untracked } from 'mobx'
 
 let globalContext = null;
@@ -11,8 +11,6 @@ export const r = createRuntime({
   sample: untracked,
   root, cleanup
 });
-
-export const h = createHyperScript(r);
 
 export function root(fn) {
   let context, d, ret;

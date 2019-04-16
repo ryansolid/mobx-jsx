@@ -1,0 +1,6 @@
+{
+  "name": "mobx-jsx/html",
+  "main": "../lib/html.js",
+  "module": "../src/html.js",
+  "sideEffects": false
+}
