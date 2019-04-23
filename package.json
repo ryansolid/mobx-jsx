@@ -1,14 +1,14 @@
 {
   "name": "mobx-jsx",
   "description": "Raw MobX performance without the restraints of a Virtual DOM",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "Ryan Carniato",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/ryansolid/mobx-jsx"
   },
-  "module": "src/index.js",
+  "module": "dist/index.js",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
   "scripts": {
