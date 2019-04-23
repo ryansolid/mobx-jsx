@@ -1,6 +1,7 @@
 {
   "name": "mobx-jsx/html",
   "main": "../lib/html.js",
-  "module": "../src/html.js",
+  "module": "../dist/html.js",
+  "types": "../types/html.d.ts",
   "sideEffects": false
 }
