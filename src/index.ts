@@ -52,9 +52,9 @@ function shallowDiff(a: HTMLElement[], b: HTMLElement[]) {
   return [a.filter(i => !sb.has(i)), (b.filter(i => !sa.has(i)))];
 }
 
-export function selectWhen(obsv: () => any, handler: string) : (s: Node, e: Node | null) => any
-export function selectWhen(obsv: () => any, handler: (element: HTMLElement, selected: boolean) => void) : (s: Node, e: Node | null) => any
-export function selectWhen(obsv: () => any, handler: any) {
+export function selectWhen(obsv: () => any, handler: string) : (s: Node, e: Node | null) => void
+export function selectWhen(obsv: () => any, handler: (element: HTMLElement, selected: boolean) => void) : (s: Node, e: Node | null) => void
+export function selectWhen(obsv: () => any, handler: any) : (s: Node, e: Node | null) => void {
   if (typeof handler === 'string') handler = createHandler(handler);
   let start: Node, end: Node | null, element: HTMLElement | null = null;
   const dispose = autorun(() => {
@@ -74,9 +74,9 @@ export function selectWhen(obsv: () => any, handler: any) {
   return (s: Node, e: Node | null) => (start = s, end = e);
 }
 
-export function selectEach(obsv: () => any, handler: string) : (s: Node, e: Node | null) => any
-export function selectEach(obsv: () => any, handler: (element: HTMLElement, selected: boolean) => void) : (s: Node, e: Node | null) => any
-export function selectEach(obsv: () => any, handler: any) {
+export function selectEach(obsv: () => any, handler: string) : (s: Node, e: Node | null) => void
+export function selectEach(obsv: () => any, handler: (element: HTMLElement, selected: boolean) => void) : (s: Node, e: Node | null) => void
+export function selectEach(obsv: () => any, handler: any) : (s: Node, e: Node | null) => void {
   if (typeof handler === 'string') handler = createHandler(handler);
   let start: Node, end: Node | null, elements: HTMLElement[] = [];
   const dispose = autorun(() => {

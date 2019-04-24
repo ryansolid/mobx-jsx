@@ -1,3 +1,4 @@
 src/
 types/tsconfig.tsbuildinfo
 rollup.config.js
+tsconfig.json
