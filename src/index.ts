@@ -1,45 +1,9 @@
-import { createRuntime, RuntimeConfig } from 'dom-expressions'
-import { autorun, untracked } from 'mobx'
+import { autorun } from 'mobx';
+import { cleanup } from './core';
+export { cleanup, root } from './core'
+export * from './runtime'
 
-type Context = { disposables: any[] };
 type DelegatableNode = Node & { model: any }
-
-let globalContext: Context;
-export const r = createRuntime({
-  wrap<T>(fn: (prev?: T) => T) {
-    let current: T,
-      dispose = autorun(() => current = fn(current));
-    cleanup(dispose);
-  },
-  sample: untracked,
-  root, cleanup
-} as RuntimeConfig);
-
-export function root<T>(fn: (dispose: () => void) => T) {
-  let context, d: any[], ret: T;
-  context = globalContext;
-  globalContext = {
-    disposables: d = []
-  };
-  ret = untracked(() =>
-    fn(() => {
-      let disposable, k, len: number;
-      for (k = 0, len = d.length; k < len; k++) {
-        disposable = d[k];
-        disposable();
-      }
-      d = [];
-    })
-  );
-  globalContext = context;
-  return ret;
-};
-
-export function cleanup(fn: () => void) {
-  let ref;
-  (ref = globalContext) != null && ref.disposables.push(fn);
-}
-
 // ***************
 // Selection handlers
 // ***************
@@ -71,7 +35,7 @@ export function selectWhen(obsv: () => any, handler: any) : (s: Node, e: Node | 
     element = null;
   });
   cleanup(dispose);
-  return (s: Node, e: Node | null) => (start = s, end = e);
+  return (s, e) => (start = s, end = e);
 }
 
 export function selectEach(obsv: () => any, handler: string) : (s: Node, e: Node | null) => void
@@ -92,5 +56,5 @@ export function selectEach(obsv: () => any, handler: any) : (s: Node, e: Node | 
     elements = newElements;
   });
   cleanup(dispose);
-  return (s: Node, e: Node | null) => (start = s, end = e);
+  return (s, e) => (start = s, end = e);
 }

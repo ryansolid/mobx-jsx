@@ -22,7 +22,7 @@ export default [{
     format: 'es',
     file: 'dist/index.js'
   }],
-  external: ['mobx', 'dom-expressions'],
+  external: ['mobx'],
   plugins
 }, {
   input: 'src/html.ts',
