@@ -1,5 +1,6 @@
 module.exports = {
   output: 'src/runtime.js',
+  includeTypes: true,
   variables: {
     imports: [
       `import { untracked } from 'mobx'`,
