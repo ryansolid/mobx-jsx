@@ -3,12 +3,12 @@ module.exports = {
   includeTypes: true,
   variables: {
     imports: [
-      `import { untracked } from 'mobx'`,
-      `import { root as mRoot, cleanup as mCleanup, computed as mComputed } from './core'`
+      `import { untracked as sample } from 'mobx'`,
+      `import {
+        root, cleanup, computed as wrap, setContext,
+        registerSuspense, getContextOwner as currentContext
+      } from './core'`
     ],
-    computed: 'mComputed',
-    sample: 'untracked',
-    root: 'mRoot',
-    cleanup: 'mCleanup'
+    includeContext: true
   }
 }

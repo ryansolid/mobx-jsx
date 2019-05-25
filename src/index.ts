@@ -1,6 +1,6 @@
 import { autorun } from 'mobx';
 import { cleanup } from './core';
-export { cleanup, root } from './core'
+export * from './core'
 export * from './runtime'
 
 type DelegatableNode = Node & { model: any }
