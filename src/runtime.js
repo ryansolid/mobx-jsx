@@ -14,6 +14,12 @@ let groupCounter = 0;
 
 export { wrap, currentContext };
 
+export function template(html) {
+  const t = document.createElement('template');
+  t.innerHTML = html;
+  return t;
+}
+
 function normalizeIncomingArray(normalized, array) {
   for (let i = 0, len = array.length; i < len; i++) {
     let item = array[i];
@@ -34,7 +40,7 @@ function normalizeIncomingArray(normalized, array) {
   return normalized;
 }
 
-function addNode(parent, node, afterNode, counter) {
+function addNode(parent, node, afterNode, counter, register) {
   if (Array.isArray(node)) {
     if (!node.length) return;
     node = normalizeIncomingArray([], node);
@@ -45,12 +51,30 @@ function addNode(parent, node, afterNode, counter) {
     return mark;
   }
   let mark, t = typeof node;
-  if (t === 'string' || t === 'number') node = document.createTextNode(node);
-  else if (node.nodeType === 11 && (mark = node.firstChild) && mark !== node.lastChild) {
+  if (node == null || t === 'string' || t === 'number') node = document.createTextNode(node || '');
+  else if (t === 'function') {
+    wrap(() => {
+      const rendered = node();
+      if (rendered) {
+        let next = afterNode;
+        if (mark) {
+          next = mark.nextSibling;
+          parent.removeChild(mark);
+        }
+        mark = addNode(parent, rendered, next, counter, register);
+      }
+    });
+    if (!mark) {
+      mark = document.createTextNode('');
+      afterNode ? parent.insertBefore(mark, afterNode) : parent.appendChild(mark);
+    }
+    return mark;
+  } else if (node.nodeType === 11 && (mark = node.firstChild) && mark !== node.lastChild) {
     mark[GROUPING] = node.lastChild[GROUPING] = counter;
   }
 
   afterNode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
+  register && register(mark || node);
   return mark || node;
 }
 
@@ -76,20 +100,20 @@ function clearAll(parent, current, marker, startNode) {
   if (marker === undefined) return parent.textContent = '';
   if (Array.isArray(current)) startNode = current[0];
   else if (current != null && current != '' && startNode === undefined) {
-    startNode = step(marker.previousSibling, BACKWARD, true);
+    startNode = step((marker && marker.previousSibling) || parent.lastChild, BACKWARD, true);
   }
   startNode && removeNodes(parent, startNode, marker);
   return '';
 }
 
-function insertExpression(parent, value, current, marker) {
+function insertExpression(parent, value, current, marker, beforeNode) {
   if (value === current) return current;
-  parent = (marker && marker.parentNode) || parent;
+  parent = (marker && marker.parentNode) || (beforeNode && beforeNode.parentNode) || parent;
   const t = typeof value;
   if (t === 'string' || t === 'number') {
     if (t === 'number') value = value.toString();
     if (marker !== undefined) {
-      const startNode = (marker && marker.previousSibling) || parent.lastChild;
+      const startNode = (marker && marker.previousSibling) || (beforeNode && beforeNode.nextSibling) || parent.lastChild;
       if (value === '') clearAll(parent, current, marker)
       else if (current !== '' && typeof current === 'string') {
         startNode.data = value;
@@ -107,8 +131,6 @@ function insertExpression(parent, value, current, marker) {
     }
   } else if (value == null || t === 'boolean') {
     current = clearAll(parent, current, marker);
-  } else if (t === 'function') {
-    wrap(function() { current = insertExpression(parent, value(), current, marker); });
   } else if (value instanceof Node || Array.isArray(value)) {
     if (current !== '' && current != null) clearAll(parent, current, marker);
     addNode(parent, value, marker, ++groupCounter);
@@ -122,7 +144,9 @@ function insertExpression(parent, value, current, marker) {
 
 export function insert(parent, accessor, marker, initial) {
   if (typeof accessor !== 'function') return insertExpression(parent, accessor, initial, marker);
-  wrap((current = initial) => insertExpression(parent, accessor(), current, marker));
+  let beforeNode;
+  if (marker !== undefined) beforeNode = (marker && marker.previousSibling) || parent.lastChild;
+  wrap((current = initial) => insertExpression(parent, accessor(), current, marker, beforeNode));
 }
 
 function dynamicProp(props, key) {
@@ -226,14 +250,14 @@ export function when(parent, accessor, expr, options, marker) {
   let beforeNode, current, disposable;
   const { afterRender, fallback } = options;
 
-  if (marker) beforeNode = marker.previousSibling;
+  if (marker !== undefined) beforeNode = (marker && marker.previousSibling) || parent.lastChild;
   cleanup(function dispose() { disposable && disposable(); });
 
   wrap(cached => {
     const value = accessor();
     if (value === cached) return cached;
     return sample(() => {
-      parent = (marker && marker.parentNode) || parent;
+      parent = (marker && marker.parentNode) || (beforeNode && beforeNode.parentNode) || parent;
       disposable && disposable();
       if (value == null || value === false) {
         clearAll(parent, current, marker, beforeNode ? beforeNode.nextSibling : parent.firstChild);
@@ -242,17 +266,66 @@ export function when(parent, accessor, expr, options, marker) {
         if (fallback) {
           root(disposer => {
             disposable = disposer;
-            current = insertExpression(parent, fallback(), current, marker)
+            const rendered = fallback();
+            if (typeof rendered !== 'function') current = insertExpression(parent, rendered, current, marker);
+            else wrap(() => current = insertExpression(parent, rendered(), current, marker));
           });
         }
         return value;
       }
       root(disposer => {
         disposable = disposer;
-        current = insertExpression(parent, expr(value), current, marker)
+        const rendered = expr(value);
+        if (typeof rendered !== 'function') current = insertExpression(parent, rendered, current, marker);
+        else wrap(() => current = insertExpression(parent, rendered(), current, marker));
       });
       afterRender && afterRender(current, marker);
       return value;
+    });
+  });
+}
+
+export function switchWhen(parent, conditions, _, options, marker) {
+  let beforeNode, current, disposable;
+  const { fallback } = options;
+
+  if (marker !== undefined) beforeNode = (marker && marker.previousSibling) || parent.lastChild;
+  function evalConditions() {
+    for (let i = 0; i < conditions.length; i++) {
+      if (conditions[i].condition()) return {index: i, render: conditions[i].render, afterRender: conditions[i].options && conditions[i].options.afterRender};
+    }
+    return {index: -1};
+  }
+  cleanup(function dispose() { disposable && disposable(); });
+
+  wrap(cached => {
+    const {index, render, afterRender} = evalConditions();
+    if (index === cached) return cached;
+    return sample(() => {
+      parent = (marker && marker.parentNode) || (beforeNode && beforeNode.parentNode) || parent;
+      disposable && disposable();
+      if (index < 0) {
+        clearAll(parent, current, marker, beforeNode ? beforeNode.nextSibling : parent.firstChild);
+        current = null;
+        afterRender && afterRender(current, marker);
+        if (fallback) {
+          root(disposer => {
+            disposable = disposer;
+            const rendered = fallback();
+            if (typeof rendered !== 'function') current = insertExpression(parent, rendered, current, marker);
+            else wrap(() => current = insertExpression(parent, rendered(), current, marker));
+          });
+        }
+        return index;
+      }
+      root(disposer => {
+        disposable = disposer;
+        const rendered = render();
+        if (typeof rendered !== 'function') current = insertExpression(parent, rendered, current, marker);
+        else wrap(() => current = insertExpression(parent, rendered(), current, marker));
+      });
+      afterRender && afterRender(current, marker);
+      return index;
     });
   });
 }
@@ -325,7 +398,7 @@ function findGreatestIndexLEQ(seq, n) {
   return lo;
 }
 
-// This is almost straightforward implementation of reconcillation algorithm
+// This is almost straightforward implementation of reconciliation algorithm
 // based on ivi documentation:
 // https://github.com/localvoid/ivi/blob/2c81ead934b9128e092cc2a5ef2d3cabc73cb5dd/packages/ivi/src/vdom/implementation.ts#L1366
 // With some fast paths from Surplus implementation:
@@ -340,11 +413,9 @@ export function each(parent, accessor, expr, options, afterNode) {
   const { afterRender, fallback } = options;
 
   function createFn(item, i, afterNode) {
-    return root(disposer => {
-      const node = addNode(parent, expr(item, i), afterNode, ++groupCounter);
-      disposables.set(node, disposer);
-      return node;
-    });
+    return root(disposer =>
+      addNode(parent, expr(item, i), afterNode, ++groupCounter, node => disposables.set(node, disposer))
+    );
   }
 
   function after() {
@@ -362,12 +433,12 @@ export function each(parent, accessor, expr, options, afterNode) {
   wrap((renderedValues = []) => {
     const data = accessor() || [];
     return sample(() => {
-      parent = (afterNode && afterNode.parentNode) || parent;
+      parent = (afterNode && afterNode.parentNode) || (beforeNode && beforeNode.parentNode) || parent;
       const length = data.length;
 
       // Fast path for clear
       if (length === 0 || isFallback) {
-        if (beforeNode || afterNode) {
+        if (afterNode !== undefined) {
           let node = beforeNode ? beforeNode.nextSibling : parent.firstChild;
           removeNodes(parent, node, afterNode ? afterNode : null);
         } else parent.textContent = "";
@@ -376,10 +447,9 @@ export function each(parent, accessor, expr, options, afterNode) {
           after();
           if (fallback) {
             isFallback = true;
-            root(disposer => {
-              const node = addNode(parent, fallback(), afterNode, ++groupCounter);
-              disposables.set(node, disposer);
-            });
+            root(disposer =>
+              addNode(parent, fallback(), afterNode, ++groupCounter, node => disposables.set(node, disposer))
+            );
           }
           return [];
         } else isFallback = false;
@@ -573,9 +643,9 @@ export function suspend(parent, accessor, expr, options, marker) {
   const { fallback } = options,
     doc = document.implementation.createHTMLDocument();
 
-  if (marker) beforeNode = marker.previousSibling;
+  if (marker !== undefined) beforeNode = (marker && marker.previousSibling) || parent.lastChild;
   for (let name of eventRegistry.keys()) doc.addEventListener(name, eventHandler);
-  Object.defineProperty(doc.body, 'host', { get() { return (marker && marker.parentNode) || parent; } });
+  Object.defineProperty(doc.body, 'host', { get() { return (marker && marker.parentNode) || (beforeNode && beforeNode.parentNode) || parent; } });
   cleanup(function dispose() { disposable && disposable(); });
 
   function suspense(options) {
@@ -584,10 +654,12 @@ export function suspend(parent, accessor, expr, options, marker) {
       const value = !!options.suspended();
       if (value === cached) return cached;
       let node;
-      parent = (marker && marker.parentNode) || parent;
+      parent = (marker && marker.parentNode) || (beforeNode && beforeNode.parentNode) || parent;
       if (value) {
-        if (options.initializing) insertExpression(doc.body, rendered);
-        else {
+        if (options.initializing) {
+          if (typeof rendered !== 'function') current = insertExpression(doc.body, rendered);
+          else wrap(() => current = insertExpression(doc.body, rendered()));
+        } else {
           node = beforeNode ? beforeNode.nextSibling : parent.firstChild;
           while (node && node !== marker) {
             const next = node.nextSibling;
@@ -598,13 +670,17 @@ export function suspend(parent, accessor, expr, options, marker) {
         if (fallback) {
           sample(() => root(disposer => {
             disposable = disposer;
-            current = insertExpression(parent, fallback(), null, marker)
+            const rendered = fallback();
+            if (typeof rendered !== 'function') current = insertExpression(parent, rendered, current, marker);
+            else wrap(() => current = insertExpression(parent, rendered(), current, marker));
           }));
         }
         return value;
       }
-      if (options.initializing) insertExpression(parent, rendered, null, marker);
-      else {
+      if (options.initializing) {
+        if (typeof rendered !== 'function') current = insertExpression(parent, rendered, undefined, marker);
+        else wrap(() => current = insertExpression(parent, rendered(), undefined, marker));
+      } else {
         if (disposable) {
           clearAll(parent, current, marker, beforeNode ? beforeNode.nextSibling : parent.firstChild);
           disposable();
@@ -626,10 +702,14 @@ export function suspend(parent, accessor, expr, options, marker) {
 export function provide(parent, accessor, expr, options, marker) {
   const Context = accessor(),
     { value } = options;
-  insertExpression(parent, () => sample(() => {
-    setContext(Context.id, Context.initFn ? Context.initFn(value) : value);
-    return expr();
-  }), undefined, marker);
+  wrap(() => {
+    sample(() => {
+      setContext(Context.id, Context.initFn ? Context.initFn(value) : value);
+      const rendered = expr();
+      if (typeof rendered !== 'function') insertExpression(parent, rendered, undefined, marker);
+      else wrap(() => insertExpression(parent, rendered(), undefined, marker));
+    });
+  });
 }
 
 export function portal(parent, accessor, expr, options, marker) {
@@ -637,9 +717,12 @@ export function portal(parent, accessor, expr, options, marker) {
     container =  document.createElement('div'),
     anchor = (accessor && sample(accessor)) || document.body,
     renderRoot = (useShadow && container.attachShadow) ? container.attachShadow({ mode: 'open' }) : container;
-  Object.defineProperty(container, 'host', { get() { return (marker && marker.parentNode) || parent; } });
+  let beforeNode;
+  if (marker !== undefined) beforeNode = (marker && marker.previousSibling) || parent.lastChild;
+  Object.defineProperty(container, 'host', { get() { return (marker && marker.parentNode) || (beforeNode && beforeNode.parentNode) || parent; } });
   const nodes = sample(() => expr(container));
-  insertExpression(container, nodes);
+  if (typeof nodes !== 'function') insertExpression(container, nodes);
+  else wrap(() => insertExpression(container, nodes()));
   // ShadyDOM polyfill doesn't handle mutationObserver on shadowRoot properly
   if (container !== renderRoot) Promise.resolve().then(() => { while(container.firstChild) renderRoot.appendChild(container.firstChild); });
   anchor.appendChild(container);
