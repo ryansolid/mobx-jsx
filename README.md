@@ -20,11 +20,15 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 "plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx'}]]
 ```
 
-# Installation
+## Installation
 
 ```sh
 > npm install mobx-jsx babel-plugin-jsx-dom-expressions
 ```
+
+## Example
+
+[MobX Counter](https://codesandbox.io/s/mobx-counter-uz7g9)
 
 ## API
 
