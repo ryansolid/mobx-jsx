@@ -3,12 +3,8 @@ module.exports = {
   includeTypes: true,
   variables: {
     imports: [
-      `import { untracked as sample } from 'mobx'`,
-      `import {
-        root, cleanup, computed as wrap, setContext,
-        registerSuspense, getContextOwner as currentContext
-      } from './core'`
+      `import { computed as wrap } from './core'`
     ],
-    includeContext: true
+    classComponents: true
   }
 }

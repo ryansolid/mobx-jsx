@@ -6,18 +6,18 @@ Check out MobX JSX performance near the top of the charts on the [JS Frameworks 
 
 It accomplishes this with using [Babel Plugin JSX DOM Expressions](https://github.com/ryansolid/babel-plugin-jsx-dom-expressions). It compiles JSX to DOM statements and by using inner parenthesis syntax ```{( )}``` wraps expressions in functions that can be called by the library of choice. In this case autorun wrap these expressions ensuring the view stays up to date. Unlike Virtual DOM only the changed nodes are affected and the whole tree is not re-rendered over and over.
 
-To use simply wrap your code in a root:
+To use call render:
 
 ```js
-import { root } from 'mobx-jsx';
+import { render } from 'mobx-jsx';
 
-root(() => document.body.appendChild(<App />))
+render(App, document.getElementById('main'));
 ```
 
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
 
 ```js
-"plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx'}]]
+"plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx', alwaysCreateComponents: true}]]
 ```
 
 ## Installation
@@ -32,15 +32,18 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 ## API
 
-Control flow is handled through a special $ JSX element that compiles down to optimized reconciled code that supports conditionals `when`, loops `each`, separate render trees `portal`, and async offscreen rendering `suspend`. Example:
+MobX JSX works both with function and class components(extend Component from this library). It also ships a specialize map function for optimal list rendering that takes an observable array as it's first argument.
 
 ```jsx
 const list = observable(["Alpha", "Beta", "Gamma"]);
 
-<ul>
-  <$ each={state.list}>{item => <li>{item}</li>}</$>
-</ul>
+<ul>{
+  map(list, item => <li>{item}</li>)
+}</ul>
 ```
+
+MobX JSX also supports a Context API.
+
 
 Alternatively this library supports Tagged Template Literals or HyperScript for non-precompiled environments by installing the companion library and including variants:
 ```js
