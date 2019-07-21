@@ -28,7 +28,8 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 ## Example
 
-[MobX Counter](https://codesandbox.io/s/mobx-counter-uz7g9)
+[MobxCounter(Functions)](https://codesandbox.io/s/mobx-counterfunctions-3sqv1)
+[MobX Counter(Classes)](https://codesandbox.io/s/mobx-counterclasses-uz7g9)
 
 ## API
 
