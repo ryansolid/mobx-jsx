@@ -126,12 +126,23 @@ export function map<T, U>(
         len = newLen;
       }
       else {
+        // skip common prefix
+        for (start = 0, end = Math.min(len, newLen); start < end && items[start] === newItems[start]; start++)
+        ;
+        // fast path for addition
+        if (start >= len && len <= newLen) {
+          for (j = start; j < newLen; j++) {
+            items[j] = newItems[j];
+            mapped[j] = root(mapper);
+          }
+          len = newLen;
+          return mapped
+        }
+
         newIndices = new Map<T, number>();
         temp = new Array(newLen);
         tempdisposers = new Array(newLen);
-        // skip common prefix and suffix
-        for (start = 0, end = Math.min(len, newLen); start < end && items[start] === newItems[start]; start++)
-          ;
+
         for (end = len - 1, newEnd = newLen - 1; end >= 0 && newEnd >= 0 && items[end] === newItems[newEnd]; end-- , newEnd--) {
           temp[newEnd] = mapped[end];
           tempdisposers[newEnd] = disposers[end];
