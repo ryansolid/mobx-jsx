@@ -68,10 +68,9 @@ function lookup(owner: ContextOwner, key: symbol | string): any {
 function createProvider(id: symbol, initFn?: Function) {
   return (props: any) => {
     let rendered;
-    autorun(() => {
+    computed(() => {
       untracked(() => {
-        if (globalContext === null) return console.warn("Context keys cannot be set without a root or parent");
-        const context = globalContext.context || (globalContext.context = {});
+        const context = globalContext!.context || (globalContext!.context = {});
         context[id] = initFn ? initFn(props.value) : props.value;
         rendered = props.children;
       });
