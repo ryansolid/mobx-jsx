@@ -136,7 +136,7 @@ export function map<T, U>(
             mapped[j] = root(mapper);
           }
           len = newLen;
-          return mapped
+          return mapped;
         }
 
         newIndices = new Map<T, number>();
