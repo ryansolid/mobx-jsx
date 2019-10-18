@@ -1,4 +1,4 @@
-import { Attributes } from 'dom-expressions';
+import { Attributes, SVGAttributes, NonComposedEvents } from 'dom-expressions';
 import { computed as wrap } from './core';
 
 
@@ -52,10 +52,10 @@ export function classList(node, value) {
   }
 }
 
-export function spread(node, accessor) {
+export function spread(node, accessor, isSVG) {
   if (typeof accessor === 'function') {
-    wrap(() => spreadExpression(node, accessor()));
-  } else spreadExpression(node, accessor);
+    wrap(current => spreadExpression(node, accessor(), current, isSVG));
+  } else spreadExpression(node, accessor, undefined, isSVG);
 }
 
 export function insert(parent, accessor, marker, initial) {
@@ -67,6 +67,61 @@ export function insert(parent, accessor, marker, initial) {
   } else {
     return insertExpression(parent, accessor, initial, marker);
   }
+}
+
+// SSR
+let hydrateRegistry = null,
+  hydrateKey = 0,
+  SSR = false;
+
+export function isSSR() { return SSR; }
+export function startSSR() {
+  hydrateKey = 0;
+  SSR = true;
+}
+
+export function hydration(code, root) {
+  hydrateRegistry = new Map();
+  hydrateKey = 0;
+  SSR = false;
+  const iterator = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+    acceptNode: node => node.hasAttribute('_hk') && NodeFilter.FILTER_ACCEPT
+  });
+  let node;
+  while (node = iterator.nextNode()) hydrateRegistry.set(node.getAttribute('_hk'), node);
+
+  code();
+  hydrateRegistry = null;
+}
+
+export function getNextElement(template) {
+  if (!hydrateRegistry) {
+    const el = template.content.firstChild.cloneNode(true);
+    if (SSR) el.setAttribute('_hk', `${hydrateKey++}`);
+    return el;
+  }
+  return hydrateRegistry.get(`${hydrateKey++}`);
+}
+
+export function getNextMarker(start) {
+  let end = start,
+    count = 0,
+    current = [];
+  if (hydrateRegistry) {
+    while (end) {
+      if (end.nodeType === 8) {
+        const v = end.nodeValue;
+        if (v === "#") count++;
+        else if (v === "/") {
+          if (count === 0) return [end, current];
+          count--;
+        }
+      }
+      current.push(end);
+      end = end.nextSibling;
+    }
+  }
+  return [end, current];
 }
 
 // Internal Functions
@@ -110,22 +165,41 @@ function eventHandler(e) {
   }
 }
 
-function spreadExpression(node, props) {
+function spreadExpression(node, props, prevProps = {}, isSVG) {
   let info;
   for (const prop in props) {
     const value = props[prop];
+    if (value === prevProps[prop]) continue;
     if (prop === 'style') {
       Object.assign(node.style, value);
     } else if (prop === 'classList') {
       classList(node, value);
+    // really only for forwarding from Components, can't forward normal ref
+    } else if (prop === 'ref' || prop === 'forwardRef') {
+      value(node);
+    } else if (prop.slice(0, 2) === 'on') {
+      const lc = prop.toLowerCase();
+      if (lc !== prop && !NonComposedEvents.has(lc.slice(2))) {
+        const name = lc.slice(2);
+        node[`__${name}`] = value;
+        delegateEvents([name]);
+      } else node[lc] = value;
     } else if (prop === 'events') {
       for (const eventName in value) node.addEventListener(eventName, value[eventName]);
+    } else if (prop === 'children') {
+      insertExpression(node, value, prevProps[prop]);
     } else if (info = Attributes[prop]) {
       if (info.type === 'attribute') {
-        node.setAttribute(prop, value)
+        node.setAttribute(prop, value);
       } else node[info.alias] = value;
+    } else if (isSVG) {
+      if (info = SVGAttributes[prop]) {
+        if (info.alias) node.setAttribute(info.alias, value);
+        else node.setAttribute(prop, value);
+      } else node.setAttribute(prop.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`), value);
     } else node[prop] = value;
   }
+  return Object.assign({}, props);
 }
 
 function normalizeIncomingArray(normalized, array) {
@@ -320,12 +394,12 @@ function reconcileArrays(parent, ns, us) {
   }
 
   // Positions for reusing nodes from current DOM state
-  const P = new Array(umax - umin + 1);
-  for(let i = umin; i <= umax; i++) P[i] = NOMATCH;
-
-  // Index to resolve position from current to new
-  const I = new Map();
-  for(let i = umin; i <= umax; i++) I.set(us[i], i);
+  const P = new Array(umax - umin + 1),
+    I = new Map();
+  for(let i = umin; i <= umax; i++) {
+    P[i] = NOMATCH;
+    I.set(us[i], i);
+  }
 
   let reusingNodes = umin + us.length - 1 - umax,
     toRemove = []
