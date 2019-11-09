@@ -34,6 +34,8 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 [MobX Lazy](https://codesandbox.io/s/mobx-lazy-demo-ev95s)
 
+[Mobx Context](https://codesandbox.io/s/mobx-counter-context-wlu1x)
+
 ## API
 
 MobX JSX works both with function and class components(extend Component from this library). It also ships a specialize map function for optimal list rendering that takes an observable array as it's first argument.
