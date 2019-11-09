@@ -17,7 +17,7 @@ render(App, document.getElementById('main'));
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
 
 ```js
-"plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx', alwaysCreateComponents: true}]]
+"plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx', wrapConditionals: true}]]
 ```
 
 ## Installation
@@ -31,6 +31,8 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 [Mobx Counter(Functions)](https://codesandbox.io/s/mobx-counterfunctions-3sqv1)
 
 [MobX Counter(Classes)](https://codesandbox.io/s/mobx-counterclasses-uz7g9)
+
+[MobX Lazy](https://codesandbox.io/s/mobx-lazy-demo-ev95s)
 
 ## API
 
