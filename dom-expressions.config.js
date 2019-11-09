@@ -3,8 +3,10 @@ module.exports = {
   includeTypes: true,
   variables: {
     imports: [
-      `import { computed as wrap } from './core'`
+      `import { effect as wrap, condition as wrapCondition } from './core';`,
+      `import { untracked as ignore } from 'mobx';`
     ],
-    classComponents: true
+    classComponents: true,
+    wrapConditionals: true
   }
 }

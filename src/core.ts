@@ -1,4 +1,4 @@
-import { autorun, untracked, $mobx, IObservableArray } from "mobx";
+import { autorun, computed, untracked, $mobx, IObservableArray, observable } from "mobx";
 
 type ContextOwner = {
   disposables: any[];
@@ -7,7 +7,8 @@ type ContextOwner = {
 };
 export interface Context {
   id: symbol;
-  Provide: (props: any) => any;
+  Provider: (props: any) => any;
+  defaultValue: unknown;
 }
 
 let globalContext: ContextOwner | null = null;
@@ -39,7 +40,7 @@ export function cleanup(fn: () => void) {
   (ref = globalContext) != null && ref.disposables.push(fn);
 }
 
-export function computed<T>(fn: (prev?: T) => T) {
+export function effect<T>(fn: (prev?: T) => T) {
   let current: T, d: any[];
   const context = {
       disposables: d = [],
@@ -58,35 +59,72 @@ export function computed<T>(fn: (prev?: T) => T) {
   });
 }
 
-export function createContext(initFn?: Function): Context {
+// only updates when boolean expression changes
+export function condition<T>(fn: () => T) {
+  const o = observable.box(!!untracked(fn));
+  effect(prev => {
+    const res = !!fn();
+    prev !== res && o.set(res);
+    return res;
+  })
+  return () => o.get();
+}
+
+// dynamic import to support code splitting
+export function lazy<T extends Function>(fn: () => Promise<{ default: T }>) {
+  return (props: object) => {
+    let Comp: T;
+    const result = observable.box();
+    fn().then(component => result.set(component.default));
+    const rendered = computed(
+      () => (Comp = result.get()) && untracked(() => Comp(props))
+    );
+    return () => rendered.get();
+  };
+}
+
+// context api
+export function createContext(defaultValue?: unknown): Context {
   const id = Symbol("context");
-  return { id, Provide: createProvider(id, initFn) };
+  return { id, Provider: createProvider(id), defaultValue };
 }
 
 export function useContext(context: Context) {
-  if (globalContext === null)
-    return console.warn(
-      "Context keys cannot be looked up without a root or parent"
-    );
-  return lookup(globalContext, context.id);
+  return lookup(globalContext, context.id) || context.defaultValue;
 }
 
-function lookup(owner: ContextOwner, key: symbol | string): any {
+function lookup(owner: ContextOwner | null, key: symbol | string): any {
   return (
-    (owner && owner.context && owner.context[key]) ||
-    (owner.owner && lookup(owner.owner, key))
+    owner &&
+    ((owner.context && owner.context[key]) ||
+      (owner.owner && lookup(owner.owner, key)))
   );
 }
 
-function createProvider(id: symbol, initFn?: Function) {
-  return (props: any) => {
+function resolveChildren(children: any): any {
+  if (typeof children === "function") {
+    const c = computed(children);
+    return () => c.get();
+  }
+  if (Array.isArray(children)) {
+    const results: any[] = [];
+    for (let i = 0; i < children.length; i++) {
+      let result = resolveChildren(children[i]);
+      Array.isArray(result)
+        ? results.push.apply(results, result)
+        : results.push(result);
+    }
+    return results;
+  }
+  return children;
+}
+
+function createProvider(id: symbol) {
+  return function provider(props: { value: unknown; children: any }) {
     let rendered;
-    computed(() => {
-      untracked(() => {
-        const context = globalContext!.context || (globalContext!.context = {});
-        context[id] = initFn ? initFn(props.value) : props.value;
-        rendered = props.children;
-      });
+    effect(() => {
+      globalContext!.context = { [id]: props.value };
+      rendered = untracked(() => resolveChildren(props.children));
     });
     return rendered;
   };

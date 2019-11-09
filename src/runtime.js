@@ -1,11 +1,12 @@
 import { Attributes, SVGAttributes, NonComposedEvents } from 'dom-expressions';
-import { computed as wrap } from './core';
+import { effect as wrap, condition as wrapCondition } from './core';;
+import { untracked as ignore } from 'mobx';;
 
 
 
 const eventRegistry = new Set();
 
-export { wrap };
+export { wrap, wrapCondition };
 
 export function template(html, isSVG) {
   const t = document.createElement('template');
@@ -22,11 +23,13 @@ export function createComponent(Comp, props, dynamicKeys) {
   }
 
   if (Comp.prototype && Comp.prototype.isClassComponent) {
-    const comp = new Comp(props);
-    return comp.render();
+    return ignore(() => {
+      const comp = new Comp(props);
+      return comp.render();
+    });
   }
 
-  return Comp(props);
+  return ignore(() => Comp(props));
 }
 
 export function delegateEvents(eventNames) {
