@@ -7,6 +7,7 @@ module.exports = {
       `import { untracked as ignore } from 'mobx';`
     ],
     classComponents: true,
+    wrapNested: true,
     wrapConditionals: true
   }
 }

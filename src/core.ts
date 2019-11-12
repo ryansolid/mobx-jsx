@@ -103,7 +103,8 @@ function lookup(owner: ContextOwner | null, key: symbol | string): any {
 
 function resolveChildren(children: any): any {
   if (typeof children === "function") {
-    const c = computed(children);
+    const c = observable.box();
+    effect(() => c.set(children()));
     return () => c.get();
   }
   if (Array.isArray(children)) {
@@ -121,12 +122,12 @@ function resolveChildren(children: any): any {
 
 function createProvider(id: symbol) {
   return function provider(props: { value: unknown; children: any }) {
-    let rendered;
+    let rendered = observable.box();
     effect(() => {
       globalContext!.context = { [id]: props.value };
-      rendered = untracked(() => resolveChildren(props.children));
+      rendered.set(untracked(() => resolveChildren(props.children)));
     });
-    return rendered;
+    return () => rendered.get();
   };
 }
 
