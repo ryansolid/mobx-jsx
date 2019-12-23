@@ -13,8 +13,13 @@ export interface Context {
 
 let globalContext: ContextOwner | null = null;
 
-export class Component {
+export class Component<T extends { children?: any }> {
   isClassComponent?: boolean;
+  props: T;
+  constructor(props: T) {
+    this.props = props;
+  }
+  render(props: T) { return props.children }
 }
 Component.prototype.isClassComponent = true;
 

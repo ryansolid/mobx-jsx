@@ -25,7 +25,7 @@ export function createComponent(Comp, props, dynamicKeys) {
   if (Comp.prototype && Comp.prototype.isClassComponent) {
     return ignore(() => {
       const comp = new Comp(props);
-      return comp.render();
+      return comp.render(props);
     });
   }
 
@@ -47,13 +47,15 @@ export function clearDelegatedEvents() {
   eventRegistry.clear();
 }
 
-export function classList(node, value) {
+export function classList(node, value, prev) {
   const classKeys = Object.keys(value);
-  for (let i = 0; i < classKeys.length; i++) {
+  for (let i = 0, len = classKeys.length; i < len; i++) {
     const key = classKeys[i],
+      classValue = value[key],
       classNames = key.split(/\s+/);
-    for (let j = 0; j < classNames.length; j++)
-      node.classList.toggle(classNames[j], value[key]);
+    if (prev && prev[key] === classValue) continue;
+    for (let j = 0, nameLen = classNames.length; j < nameLen; j++)
+      node.classList.toggle(classNames[j], classValue);
   }
 }
 
@@ -172,39 +174,55 @@ function eventHandler(e) {
 
 function spreadExpression(node, props, prevProps = {}, isSVG) {
   let info;
-  for (const prop in props) {
-    const value = props[prop];
-    if (value === prevProps[prop]) continue;
-    if (prop === 'style') {
-      Object.assign(node.style, value);
-    } else if (prop === 'classList') {
-      classList(node, value);
-    // really only for forwarding from Components, can't forward normal ref
-    } else if (prop === 'ref' || prop === 'forwardRef') {
-      value(node);
-    } else if (prop.slice(0, 2) === 'on') {
-      const lc = prop.toLowerCase();
-      if (lc !== prop && !NonComposedEvents.has(lc.slice(2))) {
-        const name = lc.slice(2);
-        node[`__${name}`] = value;
-        delegateEvents([name]);
-      } else node[lc] = value;
-    } else if (prop === 'events') {
-      for (const eventName in value) node.addEventListener(eventName, value[eventName]);
-    } else if (prop === 'children') {
-      insertExpression(node, value, prevProps[prop]);
-    } else if (info = Attributes[prop]) {
-      if (info.type === 'attribute') {
-        node.setAttribute(prop, value);
-      } else node[info.alias] = value;
-    } else if (isSVG) {
-      if (info = SVGAttributes[prop]) {
-        if (info.alias) node.setAttribute(info.alias, value);
-        else node.setAttribute(prop, value);
-      } else node.setAttribute(prop.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`), value);
-    } else node[prop] = value;
+  if ("children" in props) {
+    wrap(() =>
+      (prevProps.children = insertExpression(
+        node,
+        props.children,
+        prevProps.children
+      ))
+    );
   }
-  return Object.assign({}, props);
+  wrap(() => {
+    for (const prop in props) {
+      if (prop === "children") continue;
+      const value = props[prop];
+      if (value === prevProps[prop]) continue;
+      if (prop === "style") {
+        Object.assign(node.style, value);
+      } else if (prop === "classList") {
+        classList(node, value, prevProps[prop]);
+        // really only for forwarding from Components, can't forward normal ref
+      } else if (prop === "ref" || prop === "forwardRef") {
+        value(node);
+      } else if (prop.slice(0, 2) === "on") {
+        const lc = prop.toLowerCase();
+        if (lc !== prop && !NonComposedEvents.has(lc.slice(2))) {
+          const name = lc.slice(2);
+          node[`__${name}`] = value;
+          delegateEvents([name]);
+        } else node[lc] = value;
+      } else if (prop === "events") {
+        for (const eventName in value)
+          node.addEventListener(eventName, value[eventName]);
+      } else if ((info = Attributes[prop])) {
+        if (info.type === "attribute") {
+          node.setAttribute(prop, value);
+        } else node[info.alias] = value;
+      } else if (isSVG) {
+        if ((info = SVGAttributes[prop])) {
+          if (info.alias) node.setAttribute(info.alias, value);
+          else node.setAttribute(prop, value);
+        } else
+          node.setAttribute(
+            prop.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`),
+            value
+          );
+      } else node[prop] = value;
+      prevProps[prop] = value;
+    }
+  });
+  return prevProps;
 }
 
 function normalizeIncomingArray(normalized, array) {
