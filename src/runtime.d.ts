@@ -1,8 +1,8 @@
-export function template(html: string, isSVG?: boolean): Element;
-export function wrap<T>(fn: (prev?: T) => T): any;
+export function template(html: string, count: number, isSVG?: boolean): Element;
+export function wrap<T>(fn: (prev?: T) => T, init?: T): any;
 export function wrapCondition(fn: () => any): () => any;
 export function insert(
-  parent: Element | Document | ShadowRoot | DocumentFragment,
+  parent: Element | Document | ShadowRoot | DocumentFragment | Node,
   accessor: any,
   init?: any,
   marker?: Node
@@ -27,17 +27,18 @@ export function classList(
 ): void;
 export function currentContext(): any;
 export function renderToString(
-  fn: (done?: () => void) => any,
+  fn: (done?: (rendered: any) => void) => any,
   options?: {
     timeoutMs?: number;
   }
 ): Promise<string>;
 export function hydrate(
   fn: () => unknown,
-  node: Element | Document | ShadowRoot | DocumentFragment
+  node: Element | Document | ShadowRoot | DocumentFragment | Node
 ): void;
 export function getNextElement(
   template: HTMLTemplateElement,
   isSSR: boolean
 ): Node;
 export function getNextMarker(start: Node): [Node, Array<Node>];
+export function generateHydrationEventsScript(eventNames: string[]): string;

@@ -1,9 +1,11 @@
 export * from "./core";
 export * from "./runtime";
-import { root } from "./core";
+import { root, condition } from "./core";
 import { insert, hydrate as hydr, renderToString as rTS } from "./runtime";
 
 type MountableElement = Element | Document | ShadowRoot | DocumentFragment;
+
+export { condition as wrapCondition }
 
 export function render(code: () => any, mount: MountableElement): () => void {
   let dispose: () => void;

@@ -66,9 +66,9 @@ export function effect<T>(fn: (prev?: T) => T) {
 
 // only updates when boolean expression changes
 export function condition<T>(fn: () => T) {
-  const o = observable.box(!!untracked(fn));
+  const o = observable.box(untracked(fn));
   effect(prev => {
-    const res = !!fn();
+    const res = fn();
     prev !== res && o.set(res);
     return res;
   })
