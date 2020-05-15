@@ -8,8 +8,15 @@ const plugins = [
   babel({
     extensions: ['.js', '.ts'],
     presets: ["@babel/preset-typescript"],
-    exclude: 'node_modules/**',
-    retainLines: true
+    plugins: [
+      [
+        "babel-plugin-transform-rename-import",
+        {
+          original: "rxcore",
+          replacement: "../../../src/core"
+        }
+      ]
+    ]
   })
 ];
 

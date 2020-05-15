@@ -1,18 +1,12 @@
-/// <reference path="../node_modules/dom-expressions/runtime.d.ts" />
-import { createHyperScript } from 'hyper-dom-expressions';
-import {
-  wrap,
+import { createHyperScript } from "hyper-dom-expressions";
+import { spread, assign, insert, createComponent, delegateEvents } from "./index";
+
+export const h = createHyperScript({
+  spread,
+  assign,
   insert,
   createComponent,
-  delegateEvents,
-  classList
-} from './index';
+  delegateEvents
+});
 
 export * from './index';
-export const h = createHyperScript({
-  wrap,
-  insert,
-  createComponent,
-  delegateEvents,
-  classList
-});
