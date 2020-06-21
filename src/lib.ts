@@ -65,8 +65,7 @@ export function effect<T>(fn: (prev?: T) => T) {
 }
 
 // only updates when boolean expression changes
-export function memo<T>(fn: () => T, equal: boolean) {
-  if (typeof fn !== "function") return fn;
+export function memo<T>(fn: () => T, equal?: boolean) {
   const o = observable.box(untracked(fn));
   effect(prev => {
     const res = fn();
@@ -102,13 +101,15 @@ export function createComponent<T>(
     for (let i = 0; i < dynamicKeys.length; i++)
       dynamicProperty(props, dynamicKeys[i] as string);
   }
+  let c;
   if (Comp.prototype && Comp.prototype.isClassComponent) {
-    return untracked(() => {
+    c = untracked(() => {
       const comp: Component<T> = new (Comp as any)(props as T);
       return comp.render(props as T);
     });
   }
-  return untracked(() => Comp(props as T));
+  c = untracked(() => Comp(props as T));
+  return typeof c === "function" ? memo(c) : c;
 }
 
 // dynamic import to support code splitting
