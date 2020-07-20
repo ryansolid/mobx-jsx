@@ -45,8 +45,8 @@ export function cleanup(fn: () => void) {
   (ref = globalContext) != null && ref.disposables.push(fn);
 }
 
-export function effect<T>(fn: (prev?: T) => T) {
-  let current: T, d: any[];
+export function effect<T>(fn: (prev?: T) => T, current?: T) {
+  let d: any[];
   const context = {
       disposables: d = [],
       owner: globalContext
