@@ -19,7 +19,9 @@ export class Component<T extends { children?: any }> {
   constructor(props: T) {
     this.props = props;
   }
-  render(props: T) { return props.children }
+  render(props: T) {
+    return props.children;
+  }
 }
 Component.prototype.isClassComponent = true;
 
@@ -71,7 +73,7 @@ export function memo<T>(fn: () => T, equal?: boolean) {
     const res = fn();
     (!equal || prev !== res) && o.set(res);
     return res;
-  })
+  });
   return () => o.get();
 }
 
@@ -88,7 +90,7 @@ function dynamicProperty(props: any, key: string) {
     get() {
       return src();
     },
-    enumerable: true,
+    enumerable: true
   });
 }
 
@@ -98,8 +100,7 @@ export function createComponent<T>(
   dynamicKeys?: (keyof T)[]
 ): JSX.Element {
   if (dynamicKeys) {
-    for (let i = 0; i < dynamicKeys.length; i++)
-      dynamicProperty(props, dynamicKeys[i] as string);
+    for (let i = 0; i < dynamicKeys.length; i++) dynamicProperty(props, dynamicKeys[i] as string);
   }
   let c;
   if (Comp.prototype && Comp.prototype.isClassComponent) {
@@ -107,8 +108,7 @@ export function createComponent<T>(
       const comp: Component<T> = new (Comp as any)(props as T);
       return comp.render(props as T);
     });
-  }
-  c = untracked(() => Comp(props as T));
+  } else c = untracked(() => Comp(props as T));
   return typeof c === "function" ? memo(c) : c;
 }
 
@@ -118,9 +118,7 @@ export function lazy<T extends Function>(fn: () => Promise<{ default: T }>) {
     let Comp: T;
     const result = observable.box();
     fn().then(component => result.set(component.default));
-    const rendered = computed(
-      () => (Comp = result.get()) && untracked(() => Comp(props))
-    );
+    const rendered = computed(() => (Comp = result.get()) && untracked(() => Comp(props)));
     return () => rendered.get();
   };
 }
@@ -137,9 +135,7 @@ export function useContext(context: Context) {
 
 function lookup(owner: ContextOwner | null, key: symbol | string): any {
   return (
-    owner &&
-    ((owner.context && owner.context[key]) ||
-      (owner.owner && lookup(owner.owner, key)))
+    owner && ((owner.context && owner.context[key]) || (owner.owner && lookup(owner.owner, key)))
   );
 }
 
@@ -153,9 +149,7 @@ function resolveChildren(children: any): any {
     const results: any[] = [];
     for (let i = 0; i < children.length; i++) {
       let result = resolveChildren(children[i]);
-      Array.isArray(result)
-        ? results.push.apply(results, result)
-        : results.push(result);
+      Array.isArray(result) ? results.push.apply(results, result) : results.push(result);
     }
     return results;
   }
