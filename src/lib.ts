@@ -1,4 +1,4 @@
-import { autorun, computed, untracked, $mobx, IObservableArray, observable } from "mobx";
+import { autorun, computed, untracked, $mobx, IObservableArray, observable, action } from "mobx";
 
 type ContextOwner = {
   disposables: any[];
@@ -68,10 +68,11 @@ export function effect<T>(fn: (prev?: T) => T, current?: T) {
 
 // only updates when boolean expression changes
 export function memo<T>(fn: () => T, equal?: boolean) {
-  const o = observable.box(untracked(fn));
+  const o = observable.box(untracked(fn)),
+    update = action((r: T) => o.set(r));
   effect(prev => {
     const res = fn();
-    (!equal || prev !== res) && o.set(res);
+    (!equal || prev !== res) && update(res);
     return res;
   });
   return () => o.get();
@@ -104,20 +105,21 @@ export function createComponent<T>(
   }
   let c;
   if (Comp.prototype && Comp.prototype.isClassComponent) {
-    c = untracked(() => {
+    return untracked(() => {
       const comp: Component<T> = new (Comp as any)(props as T);
       return comp.render(props as T);
     });
-  } else c = untracked(() => Comp(props as T));
-  return typeof c === "function" ? memo(c) : c;
+  }
+  return untracked(() => Comp(props as T));
 }
 
 // dynamic import to support code splitting
 export function lazy<T extends Function>(fn: () => Promise<{ default: T }>) {
   return (props: object) => {
     let Comp: T;
-    const result = observable.box();
-    fn().then(component => result.set(component.default));
+    const result = observable.box(),
+      update = action((component: { default: T }) => result.set(component.default));
+    fn().then(update);
     const rendered = computed(() => (Comp = result.get()) && untracked(() => Comp(props)));
     return () => rendered.get();
   };
@@ -141,8 +143,9 @@ function lookup(owner: ContextOwner | null, key: symbol | string): any {
 
 function resolveChildren(children: any): any {
   if (typeof children === "function") {
-    const c = observable.box();
-    effect(() => c.set(children()));
+    const c = observable.box(),
+      update = action((child: any) => c.set(child));
+    effect(() => update(children()));
     return () => c.get();
   }
   if (Array.isArray(children)) {
@@ -158,10 +161,11 @@ function resolveChildren(children: any): any {
 
 function createProvider(id: symbol) {
   return function provider(props: { value: unknown; children: any }) {
-    let rendered = observable.box();
+    let rendered = observable.box(),
+      update = action(() => rendered.set(resolveChildren(props.children)))
     effect(() => {
       globalContext!.context = { [id]: props.value };
-      rendered.set(untracked(() => resolveChildren(props.children)));
+      update();
     });
     return () => rendered.get();
   };
@@ -179,7 +183,7 @@ export function map<T, U>(
   cleanup(() => {
     for (let i = 0, length = disposers.length; i < length; i++) disposers[i]();
   });
-  return () => {
+  return memo(() => {
     list[$mobx].atom.reportObserved();
     let newItems = list,
       i: number,
@@ -294,5 +298,5 @@ export function map<T, U>(
       disposers[j] = disposer;
       return mapFn(newItems[j], j);
     }
-  };
+  });
 }
