@@ -183,7 +183,7 @@ export function map<T, U>(
   cleanup(() => {
     for (let i = 0, length = disposers.length; i < length; i++) disposers[i]();
   });
-  return memo(() => {
+  return () => {
     list[$mobx].atom.reportObserved();
     let newItems = list,
       i: number,
@@ -298,5 +298,5 @@ export function map<T, U>(
       disposers[j] = disposer;
       return mapFn(newItems[j], j);
     }
-  });
+  };
 }
