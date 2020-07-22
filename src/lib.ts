@@ -55,8 +55,8 @@ export function effect<T>(fn: (prev?: T) => T, current?: T) {
     },
     cleanupFn = (final: boolean) => {
       const d = context.disposables;
-      for (let k = 0, len = d.length; k < len; k++) d[k]();
       context.disposables = [];
+      for (let k = 0, len = d.length; k < len; k++) d[k]();
       final && dispose();
     },
     dispose = autorun(() => {
