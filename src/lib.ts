@@ -48,19 +48,20 @@ export function cleanup(fn: () => void) {
 }
 
 export function effect<T>(fn: (prev?: T) => T, current?: T) {
-  let d: any[];
   const context = {
-      disposables: d = [],
+      disposables: [] as (() => void)[],
       owner: globalContext
     },
     dispose = autorun(() => {
+      const d = context.disposables;
       for (let k = 0, len = d.length; k < len; k++) d[k]();
-      d = [];
+      context.disposables = [];
       globalContext = context;
       current = fn(current);
       globalContext = globalContext.owner;
     });
   cleanup(() => {
+    const d = context.disposables;
     for (let k = 0, len = d.length; k < len; k++) d[k]();
     dispose();
   });
