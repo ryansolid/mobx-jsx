@@ -26,7 +26,7 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 > npm install mobx-jsx babel-plugin-jsx-dom-expressions
 ```
 
-## Example
+## Examples
 
 [Mobx Counter(Functions)](https://codesandbox.io/s/mobx-counterfunctions-3sqv1)
 
@@ -38,9 +38,15 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 ## API
 
-MobX JSX works both with function and class components(extend Component from this library). It also ships a specialize map function for optimal list rendering that takes an observable array as it's first argument.
+MobX JSX works both with function and class components(extend Component from this library). 
+
+### Note on observable arrays
+
+It also ships a specialize map function for optimal list rendering that takes an observable array as it's first argument. To avoid re-rendering the complete list on changes.
 
 ```jsx
+import { map } from "mobx-jsx";
+
 const list = observable(["Alpha", "Beta", "Gamma"]);
 
 <ul>{
@@ -48,8 +54,28 @@ const list = observable(["Alpha", "Beta", "Gamma"]);
 }</ul>
 ```
 
-MobX JSX also supports a Context API.
+### MobX JSX also supports a Context API.
 
+### Components can be loaded lazily
+
+```jsx
+import { render, lazy } from "mobx-jsx";
+
+// use lazy to allow code splitting
+const SomeComponent = lazy(() => import("./SomeComponent"));
+
+function App() {
+  return (
+    <>
+      <SomeComponent name={"John"} />
+    </>
+  );
+}
+
+render(App, document.body);
+```
+
+### Non-precompiled environments
 
 Alternatively this library supports Tagged Template Literals or HyperScript for non-precompiled environments by installing the companion library and including variants:
 ```js
