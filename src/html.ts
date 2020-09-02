@@ -1,5 +1,5 @@
-import { createHTML } from 'lit-dom-expressions';
-import { effect, style, insert, createComponent, delegateEvents, classList } from "./index";
+import { createHTML } from "lit-dom-expressions";
+import { effect, style, insert, createComponent, delegateEvents, classList, dynamicProperty } from "./index";
 
 export const html = createHTML({
   effect,
@@ -7,7 +7,8 @@ export const html = createHTML({
   insert,
   createComponent,
   delegateEvents,
-  classList
+  classList,
+  dynamicProperty
 });
 
-export * from './index';
+export * from "./index";

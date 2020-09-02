@@ -17,7 +17,7 @@ render(App, document.getElementById('main'));
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
 
 ```js
-"plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx', wrapConditionals: true}]]
+"plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx'}]]
 ```
 
 ## Installation
@@ -38,7 +38,7 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 ## API
 
-MobX JSX works both with function and class components(extend Component from this library). 
+MobX JSX works both with function and class components(extend Component from this library).
 
 ### Note on observable arrays
 

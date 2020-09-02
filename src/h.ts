@@ -1,12 +1,12 @@
 import { createHyperScript } from "hyper-dom-expressions";
-import { spread, assign, insert, createComponent, delegateEvents } from "./index";
+import { spread, assign, insert, createComponent, dynamicProperty } from "./index";
 
 export const h = createHyperScript({
   spread,
   assign,
   insert,
   createComponent,
-  delegateEvents
+  dynamicProperty
 });
 
 export * from './index';

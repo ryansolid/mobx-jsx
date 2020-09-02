@@ -48,7 +48,6 @@ export function cleanup(fn: () => void) {
 }
 
 export function effect<T>(fn: (prev?: T) => T, current?: T) {
-  let disposed
   const context = {
       disposables: [] as (() => void)[],
       owner: globalContext
@@ -82,30 +81,22 @@ export function memo<T>(fn: () => T, equal?: boolean) {
 
 type PropsWithChildren<P> = P & { children?: JSX.Element };
 export type FunctionComponent<P = {}> = (props: PropsWithChildren<P>) => JSX.Element;
+type ComponentConstructor<P> =
+  | FunctionComponent<P>
+  | (new (props: PropsWithChildren<P>) => JSX.Element);
 
-type PossiblyWrapped<T> = {
-  [P in keyof T]: T[P] | (() => T[P]);
-};
-
-function dynamicProperty(props: any, key: string) {
-  const src = props[key];
-  Object.defineProperty(props, key, {
-    get() {
-      return src();
-    },
-    enumerable: true
-  });
-}
+export type ComponentProps<
+  T extends keyof JSX.IntrinsicElements | ComponentConstructor<any>
+> = T extends ComponentConstructor<infer P>
+  ? P
+  : T extends keyof JSX.IntrinsicElements
+  ? JSX.IntrinsicElements[T]
+  : {};
 
 export function createComponent<T>(
   Comp: Component<T> & FunctionComponent<T>,
-  props: PossiblyWrapped<T>,
-  dynamicKeys?: (keyof T)[]
+  props: T
 ): JSX.Element {
-  if (dynamicKeys) {
-    for (let i = 0; i < dynamicKeys.length; i++) dynamicProperty(props, dynamicKeys[i] as string);
-  }
-  let c;
   if (Comp.prototype && Comp.prototype.isClassComponent) {
     return untracked(() => {
       const comp: Component<T> = new (Comp as any)(props as T);
@@ -164,7 +155,7 @@ function resolveChildren(children: any): any {
 function createProvider(id: symbol) {
   return function provider(props: { value: unknown; children: any }) {
     let rendered = observable.box(),
-      update = action(() => rendered.set(resolveChildren(props.children)))
+      update = action(() => rendered.set(resolveChildren(props.children)));
     effect(() => {
       globalContext!.context = { [id]: props.value };
       update();
