@@ -60,9 +60,10 @@ export function effect<T>(fn: (prev?: T) => T, current?: T) {
     },
     dispose = autorun(() => {
       cleanupFn(false);
+      const prev = globalContext;
       globalContext = context;
       current = fn(current);
-      globalContext = globalContext.owner;
+      globalContext = prev;
     });
   cleanup(() => cleanupFn(true));
 }
