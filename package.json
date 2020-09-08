@@ -1,7 +1,7 @@
 {
   "name": "mobx-jsx",
   "description": "Raw MobX performance without the restraints of a Virtual DOM",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "author": "Ryan Carniato",
   "license": "MIT",
   "repository": {
