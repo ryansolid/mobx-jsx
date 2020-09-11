@@ -70,7 +70,7 @@ export function effect<T>(fn: (prev?: T) => T, current?: T) {
 
 // only updates when boolean expression changes
 export function memo<T>(fn: () => T, equal?: boolean) {
-  const o = observable.box(untracked(fn)),
+  const o = observable.box(),
     update = action((r: T) => o.set(r));
   effect(prev => {
     const res = fn();
@@ -167,21 +167,22 @@ function createProvider(id: symbol) {
 
 // Modified version of mapSample from S-array[https://github.com/adamhaile/S-array] by Adam Haile
 export function map<T, U>(
-  list: IObservableArray<T> & { [$mobx]: any },
+  list: IObservableArray<T> & { [$mobx]: any } | (() => Array<T>),
   mapFn: (v: T, i: number) => U | any
 ) {
   let items = [] as T[],
     mapped = [] as U[],
     disposers = [] as (() => void)[],
+    fn = typeof list === "function",
     len = 0;
   cleanup(() => {
     for (let i = 0, length = disposers.length; i < length; i++) disposers[i]();
   });
   return () => {
-    list[$mobx].atom.reportObserved();
-    let newItems = list,
+    let newItems = fn ? (list as () => Array<T>)() : list as T[],
       i: number,
       j: number;
+    !fn && (list as IObservableArray<T> & { [$mobx]: any })[$mobx].atom.reportObserved();
     return untracked(() => {
       let newLen = newItems.length,
         newIndices: Map<T, number>,
