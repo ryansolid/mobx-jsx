@@ -30,7 +30,7 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 [Mobx Counter(Functions)](https://codesandbox.io/s/mobx-counterfunctions-3sqv1)
 
-[MobX Counter(Classes)](https://codesandbox.io/s/mobx-counterclasses-uz7g9)
+[MobX Counter(Classes)](https://codesandbox.io/s/mobx-counterclasses-uz7g9) [Note: Due to updates the implementation with classes is partial and the future of it uncertain. (see  https://github.com/ryansolid/mobx-jsx/issues/31 )]
 
 [MobX Lazy](https://codesandbox.io/s/mobx-lazy-demo-ev95s)
 
