@@ -2975,6 +2975,7 @@ declare global {
         ConditionalProcessingSVGAttributes,
         ExternalResourceSVGAttributes,
         StylableSVGAttributes,
+        TransformableSVGAttributes,
         Pick<PresentationSVGAttributes, "display" | "visibility"> {}
 
     interface ImageSVGAttributes<T>
@@ -3311,7 +3312,7 @@ declare global {
       picture: HTMLAttributes<HTMLElement>;
       pre: HTMLAttributes<HTMLPreElement>;
       progress: ProgressHTMLAttributes<HTMLProgressElement>;
-      q: HTMLAttributes<HTMLQuoteElement>;
+      q: QuoteHTMLAttributes<HTMLQuoteElement>;
       rp: HTMLAttributes<HTMLElement>;
       rt: HTMLAttributes<HTMLElement>;
       ruby: HTMLAttributes<HTMLElement>;
@@ -3334,7 +3335,7 @@ declare global {
       td: TdHTMLAttributes<HTMLTableDataCellElement>;
       textarea: TextareaHTMLAttributes<HTMLTextAreaElement>;
       tfoot: HTMLAttributes<HTMLTableSectionElement>;
-      th: HTMLAttributes<HTMLTableHeaderCellElement>;
+      th: ThHTMLAttributes<HTMLTableHeaderCellElement>;
       thead: HTMLAttributes<HTMLTableSectionElement>;
       time: TimeHTMLAttributes<HTMLElement>;
       title: HTMLAttributes<HTMLTitleElement>;

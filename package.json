@@ -1,7 +1,7 @@
 {
   "name": "mobx-jsx",
   "description": "Raw MobX performance without the restraints of a Virtual DOM",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "author": "Ryan Carniato",
   "license": "MIT",
   "repository": {
@@ -16,17 +16,17 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@babel/core": "7.11.5",
+    "@babel/core": "7.11.6",
     "@babel/preset-typescript": "7.10.4",
-    "dom-expressions": "0.20.0",
-    "hyper-dom-expressions": "0.20.0",
-    "lit-dom-expressions": "0.20.0",
+    "dom-expressions": "0.20.8",
+    "hyper-dom-expressions": "0.20.8",
+    "lit-dom-expressions": "0.20.8",
     "mobx": "^5.15.6",
     "ncp": "2.0.0",
-    "rollup": "^2.26.9",
-    "@rollup/plugin-babel": "5.2.0",
+    "rollup": "^2.28.1",
+    "@rollup/plugin-babel": "5.2.1",
     "@rollup/plugin-node-resolve": "9.0.0",
-    "typescript": "4.0.2"
+    "typescript": "4.0.3"
   },
   "peerDependencies": {
     "mobx": "*"
