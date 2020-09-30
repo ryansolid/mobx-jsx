@@ -4,9 +4,11 @@ This library is a demonstration of how MobX fine grain control can be leveraged 
 
 Check out MobX JSX performance near the top of the charts on the [JS Frameworks Benchmark](https://github.com/krausest/js-framework-benchmark).
 
-It accomplishes this with using [Babel Plugin JSX DOM Expressions](https://github.com/ryansolid/babel-plugin-jsx-dom-expressions). It compiles JSX to DOM statements and wraps expressions in functions that can be called by the library of choice. In this case `autorun` wraps these expressions ensuring the view stays up to date. Unlike Virtual DOM only the changed nodes are affected and the whole tree is not re-rendered over and over.
+It accomplishes this with using [Babel Plugin JSX DOM Expressions](https://github.com/ryansolid/dom-expressions/tree/master/packages/babel-plugin-jsx-dom-expressions). It compiles JSX to DOM statements and wraps expressions in functions that can be called by the library of choice. In this case `autorun` wraps these expressions ensuring the view stays up to date. Unlike Virtual DOM only the changed nodes are affected and the whole tree is not re-rendered over and over.
 
-To use call render:
+## Usage
+
+To use call render as follow
 
 ```js
 import { render } from 'mobx-jsx';
@@ -17,8 +19,9 @@ render(App, document.getElementById('main'));
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
 
 ```js
-"plugins": [["jsx-dom-expressions", {moduleName: 'mobx-jsx'}]]
+"plugins": [["babel-plugin-jsx-dom-expressions", {moduleName: 'mobx-jsx'}]]
 ```
+See [plugin options](https://github.com/ryansolid/dom-expressions/tree/master/packages/babel-plugin-jsx-dom-expressions#plugin-options)
 
 ## Installation
 
@@ -28,21 +31,18 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 
 ## Examples
 
-[Mobx Counter(Functions)](https://codesandbox.io/s/mobx-counterfunctions-3sqv1)
-
-[MobX Counter(Classes)](https://codesandbox.io/s/mobx-counterclasses-uz7g9)
-
-[MobX Lazy](https://codesandbox.io/s/mobx-lazy-demo-ev95s)
-
-[Mobx Context](https://codesandbox.io/s/mobx-counter-context-wlu1x)
+- [Counter Using Functions](https://codesandbox.io/s/mobx-counterfunctions-3sqv1)
+- [Counter Using Classes](https://codesandbox.io/s/mobx-counterclasses-uz7g9)
+- [Lazy Loading](https://codesandbox.io/s/mobx-lazy-demo-ev95s)
+- [Context](https://codesandbox.io/s/mobx-counter-context-wlu1x)
 
 ## API
 
-MobX JSX works both with function and class components(extend Component from this library).
+MobX JSX works both with function and Class components (extend Component from this library).
 
-### Note on observable arrays
+### Map For Observable Arrays
 
-It also ships a specialize map function for optimal list rendering that takes an observable array as it's first argument. To avoid re-rendering the complete list on changes.
+Ships a specialize map function for optimal list rendering that takes an observable array as it's first argument. To avoid re-rendering the complete list on changes.
 
 ```jsx
 import { map } from "mobx-jsx";
@@ -54,9 +54,14 @@ const list = observable(["Alpha", "Beta", "Gamma"]);
 }</ul>
 ```
 
-### MobX JSX also supports a Context API.
+### Lifecycles 
 
-### Components can be loaded lazily
+Unlike React `render` only runs once, so you may not need to split in functions or methods your Lifecycles, all the initialization code could be set on `render`. See the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for furter information 
+
+However, you may emulate `componentDidMount` and `componentWillUnmount`. The microtak`Promise` resolution will be after mount and `cleanup` runs at the beginning of re-evaluation so the elements aren't removed yet.
+
+
+### Lazily Loading a Component
 
 ```jsx
 import { render, lazy } from "mobx-jsx";
@@ -75,9 +80,37 @@ function App() {
 render(App, document.body);
 ```
 
-### Non-precompiled environments
+#### Example 
 
-Alternatively this library supports Tagged Template Literals or HyperScript for non-precompiled environments by installing the companion library and including variants:
+```jsx
+import { render, cleanup, Component as _Component } from 'mobx-jsx'
+
+class Component extends _Component {
+	constructor(props) {
+		super(props)
+		if (this.componentDidMount) {
+			Promise.resolve().then(() => this.componentDidMount())
+		}
+		if (this.componentWillUnmount) {
+			cleanup(() => this.componentWillUnmount())
+		}
+	}
+}
+
+class App extends Component { 
+  componentDidMount(){ console.log('componentDidMount')}  
+  componentWillUnmount(){ console.log('componentWillUnmount') } 
+} 
+
+```
+
+
+
+### MobX JSX also supports a Context API.
+
+## Non-precompiled environments
+
+Alternatively supports Tagged Template Literals or HyperScript for non-precompiled environments by installing the companion library and including variants:
 ```js
 import { html } from 'mobx-jsx/html'; // or
 import { h } from 'mobx-jsx/h';
