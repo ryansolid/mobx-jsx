@@ -60,26 +60,6 @@ Unlike React `render` only runs once, so you may not need to split in functions 
 
 However, you may emulate `componentDidMount` and `componentWillUnmount`. The microtak`Promise` resolution will be after mount and `cleanup` runs at the beginning of re-evaluation so the elements aren't removed yet.
 
-
-### Lazily Loading a Component
-
-```jsx
-import { render, lazy } from "mobx-jsx";
-
-// use lazy to allow code splitting
-const SomeComponent = lazy(() => import("./SomeComponent"));
-
-function App() {
-  return (
-    <>
-      <SomeComponent name={"John"} />
-    </>
-  );
-}
-
-render(App, document.body);
-```
-
 #### Example 
 
 ```jsx
@@ -105,6 +85,24 @@ class App extends Component {
 ```
 
 
+### Lazily Loading a Component
+
+```jsx
+import { render, lazy } from "mobx-jsx";
+
+// use lazy to allow code splitting
+const SomeComponent = lazy(() => import("./SomeComponent"));
+
+function App() {
+  return (
+    <>
+      <SomeComponent name={"John"} />
+    </>
+  );
+}
+
+render(App, document.body);
+```
 
 ### MobX JSX also supports a Context API.
 
