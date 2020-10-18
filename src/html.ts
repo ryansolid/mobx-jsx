@@ -1,5 +1,21 @@
 import { createHTML } from "lit-dom-expressions";
-import { effect, style, insert, createComponent, delegateEvents, classList, dynamicProperty } from "./index";
+import {
+  effect,
+  style,
+  insert,
+  createComponent,
+  delegateEvents,
+  classList,
+  dynamicProperty,
+  setAttribute,
+  setAttributeNS,
+  Aliases,
+  Properties,
+  ChildProperties,
+  NonComposedEvents,
+  SVGElements,
+  SVGNamespace
+} from "./index.js";
 
 export const html = createHTML({
   effect,
@@ -8,7 +24,15 @@ export const html = createHTML({
   createComponent,
   delegateEvents,
   classList,
-  dynamicProperty
+  dynamicProperty,
+  setAttribute,
+  setAttributeNS,
+  Aliases,
+  Properties,
+  ChildProperties,
+  NonComposedEvents,
+  SVGElements,
+  SVGNamespace
 });
 
 export * from "./index";
