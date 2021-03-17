@@ -1,7 +1,7 @@
-export { root, cleanup, Component, lazy, createContext, useContext, map, splitProps, assignProps } from "./lib";
+export { root, cleanup, createSelector, Component, lazy, createContext, useContext, map, splitProps } from "./lib";
 export type { Context, FunctionComponent, ComponentProps } from "./lib";
-export * from "./runtime";
+export * from "./client";
 
-import "./jsx"
+export type { JSX } from "./jsx"
 
 

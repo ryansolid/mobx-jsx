@@ -5,4 +5,5 @@ export {
   createComponent
 } from "./lib"
 
-export const currentContext = {};
+export const sharedConfig = {};
+export const getOwner = null;

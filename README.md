@@ -23,6 +23,12 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 ```
 See [plugin options](https://github.com/ryansolid/dom-expressions/tree/master/packages/babel-plugin-jsx-dom-expressions#plugin-options)
 
+For TS JSX types add to your `tsconfig.json`:
+```js
+"jsx": "preserve",
+"jsxImportSource": "mobx-jsx" 
+```
+
 ## Installation
 
 ```sh

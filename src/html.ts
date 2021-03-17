@@ -9,10 +9,11 @@ import {
   dynamicProperty,
   setAttribute,
   setAttributeNS,
+  addEventListener,
   Aliases,
   Properties,
   ChildProperties,
-  NonComposedEvents,
+  DelegatedEvents,
   SVGElements,
   SVGNamespace
 } from "./index.js";
@@ -27,12 +28,13 @@ export const html = createHTML({
   dynamicProperty,
   setAttribute,
   setAttributeNS,
+  addEventListener,
   Aliases,
   Properties,
   ChildProperties,
-  NonComposedEvents,
+  DelegatedEvents,
   SVGElements,
   SVGNamespace
 });
 
-export * from "./index";
+export { root, cleanup } from "./index";
