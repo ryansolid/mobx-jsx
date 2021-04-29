@@ -54,14 +54,34 @@ export namespace JSX {
     classList?: {
       [k: string]: boolean | undefined;
     };
-    on?: {
-      [key: string]: EventHandler<T, CustomEvent>;
-    };
-    onCapture?: {
-      [key: string]: EventHandler<T, CustomEvent>;
-    };
   }
-  interface DOMAttributes<T> extends CustomAttributes<T> {
+  interface Directives {}
+  interface ExplicitProperties {}
+  interface ExplicitAttributes {}
+  interface CustomEvents {}
+  interface CustomCaptureEvents {}
+  type DirectiveAttributes = {
+    [Key in keyof Directives as `use:${Key}`]?: Directives[Key];
+  };
+  type PropAttributes = {
+    [Key in keyof ExplicitProperties as `prop:${Key}`]?: ExplicitProperties[Key];
+  };
+  type AttrAttributes = {
+    [Key in keyof ExplicitAttributes as `attr:${Key}`]?: ExplicitAttributes[Key];
+  };
+  type OnAttributes<T> = {
+    [Key in keyof CustomEvents as `on:${Key}`]?: EventHandler<T, CustomEvents[Key]>;
+  };
+  type OnCaptureAttributes<T> = {
+    [Key in keyof CustomEvents as `oncapture:${Key}`]?: EventHandler<T, CustomEvents[Key]>;
+  };
+  interface DOMAttributes<T>
+    extends CustomAttributes<T>,
+      DirectiveAttributes,
+      PropAttributes,
+      AttrAttributes,
+      OnAttributes<T>,
+      OnCaptureAttributes<T> {
     children?: Element;
     innerHTML?: string;
     innerText?: string;
@@ -281,6 +301,10 @@ export namespace JSX {
      * Defines whether an animation should run in reverse on some or all cycles.
      */
     "animation-direction"?: CSSWideKeyword | any;
+    /**
+     * Defines how long an animation runs for.
+     */
+    "animation-duration"?: CSSWideKeyword | any;
     /**
      * Specifies how many times an animation cycle should play.
      */
@@ -1697,17 +1721,17 @@ export namespace JSX {
      * Defines the total number of columns in a table, grid, or treegrid.
      * @see aria-colindex.
      */
-    "aria-colcount"?: number;
+    "aria-colcount"?: number | string;
     /**
      * Defines an element's column index or position with respect to the total number of columns within a table, grid, or treegrid.
      * @see aria-colcount @see aria-colspan.
      */
-    "aria-colindex"?: number;
+    "aria-colindex"?: number | string;
     /**
      * Defines the number of columns spanned by a cell or gridcell within a table, grid, or treegrid.
      * @see aria-colindex @see aria-rowspan.
      */
-    "aria-colspan"?: number;
+    "aria-colspan"?: number | string;
     /**
      * Identifies the element (or elements) whose contents or presence are controlled by the current element.
      * @see aria-owns.
@@ -1777,7 +1801,7 @@ export namespace JSX {
      */
     "aria-labelledby"?: string;
     /** Defines the hierarchical level of an element within a structure. */
-    "aria-level"?: number;
+    "aria-level"?: number | string;
     /** Indicates that an element will be updated, and describes the types of updates the user agents, assistive technologies, and user can expect from the live region. */
     "aria-live"?: "off" | "assertive" | "polite";
     /** Indicates whether an element is modal when displayed. */
@@ -1803,7 +1827,7 @@ export namespace JSX {
      * Defines an element's number or position in the current set of listitems or treeitems. Not required if all elements in the set are present in the DOM.
      * @see aria-setsize.
      */
-    "aria-posinset"?: number;
+    "aria-posinset"?: number | string;
     /**
      * Indicates the current "pressed" state of toggle buttons.
      * @see aria-checked @see aria-selected.
@@ -1837,17 +1861,17 @@ export namespace JSX {
      * Defines the total number of rows in a table, grid, or treegrid.
      * @see aria-rowindex.
      */
-    "aria-rowcount"?: number;
+    "aria-rowcount"?: number | string;
     /**
      * Defines an element's row index or position with respect to the total number of rows within a table, grid, or treegrid.
      * @see aria-rowcount @see aria-rowspan.
      */
-    "aria-rowindex"?: number;
+    "aria-rowindex"?: number | string;
     /**
      * Defines the number of rows spanned by a cell or gridcell within a table, grid, or treegrid.
      * @see aria-rowindex @see aria-colspan.
      */
-    "aria-rowspan"?: number;
+    "aria-rowspan"?: number | string;
     /**
      * Indicates the current "selected" state of various widgets.
      * @see aria-checked @see aria-pressed.
@@ -1857,18 +1881,18 @@ export namespace JSX {
      * Defines the number of items in the current set of listitems or treeitems. Not required if all elements in the set are present in the DOM.
      * @see aria-posinset.
      */
-    "aria-setsize"?: number;
+    "aria-setsize"?: number | string;
     /** Indicates if items in a table or grid are sorted in ascending or descending order. */
     "aria-sort"?: "none" | "ascending" | "descending" | "other";
     /** Defines the maximum allowed value for a range widget. */
-    "aria-valuemax"?: number;
+    "aria-valuemax"?: number | string;
     /** Defines the minimum allowed value for a range widget. */
-    "aria-valuemin"?: number;
+    "aria-valuemin"?: number | string;
     /**
      * Defines the current value for a range widget.
      * @see aria-valuetext.
      */
-    "aria-valuenow"?: number;
+    "aria-valuenow"?: number | string;
     /** Defines the human readable text alternative of aria-valuenow for a range widget. */
     "aria-valuetext"?: string;
   }
@@ -2345,6 +2369,7 @@ export namespace JSX {
     rowspan?: number | string;
     colSpan?: number | string;
     rowSpan?: number | string;
+    scope?: "col" | "row" | "rowgroup" | "colgroup";
   }
   interface TimeHTMLAttributes<T> extends HTMLAttributes<T> {
     datetime?: string;
@@ -3154,6 +3179,7 @@ export namespace JSX {
     y?: number | string;
     width?: number | string;
     height?: number | string;
+    href?: string;
   }
   interface ViewSVGAttributes<T>
     extends CoreSVGAttributes<T>,

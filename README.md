@@ -11,9 +11,9 @@ It accomplishes this with using [Babel Plugin JSX DOM Expressions](https://githu
 To use call render as follow
 
 ```js
-import { render } from 'mobx-jsx';
+import { render } from "mobx-jsx";
 
-render(App, document.getElementById('main'));
+render(App, document.getElementById("main"));
 ```
 
 And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel loader, or rollup babel plugin.
@@ -21,12 +21,14 @@ And include 'babel-plugin-jsx-dom-expressions' in your babelrc, webpack babel lo
 ```js
 "plugins": [["babel-plugin-jsx-dom-expressions", {moduleName: 'mobx-jsx'}]]
 ```
+
 See [plugin options](https://github.com/ryansolid/dom-expressions/tree/master/packages/babel-plugin-jsx-dom-expressions#plugin-options)
 
 For TS JSX types add to your `tsconfig.json`:
+
 ```js
 "jsx": "preserve",
-"jsxImportSource": "mobx-jsx" 
+"jsxImportSource": "mobx-jsx"
 ```
 
 ## Installation
@@ -55,41 +57,45 @@ import { map } from "mobx-jsx";
 
 const list = observable(["Alpha", "Beta", "Gamma"]);
 
-<ul>{
-  map(list, item => <li>{item}</li>)
-}</ul>
+<ul>
+  {map(list, item => (
+    <li>{item}</li>
+  ))}
+</ul>;
 ```
 
-### Lifecycles 
+### Lifecycles
 
-Unlike React `render` only runs once, so you may not need to split in functions or methods your Lifecycles, all the initialization code could be set on `render`. See the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for furter information 
+Unlike React `render` only runs once, so you may not need to split in functions or methods your Lifecycles, all the initialization code could be set on `render`. See the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for furter information.
 
 However, you may emulate `componentDidMount` and `componentWillUnmount`. The microtak`Promise` resolution will be after mount and `cleanup` runs at the beginning of re-evaluation so the elements aren't removed yet.
 
-#### Example 
+#### Example
 
 ```jsx
-import { render, cleanup, Component as _Component } from 'mobx-jsx'
+import { render, cleanup, Component as _Component } from "mobx-jsx";
 
 class Component extends _Component {
-	constructor(props) {
-		super(props)
-		if (this.componentDidMount) {
-			Promise.resolve().then(() => this.componentDidMount())
-		}
-		if (this.componentWillUnmount) {
-			cleanup(() => this.componentWillUnmount())
-		}
-	}
+  constructor(props) {
+    super(props);
+    if (this.componentDidMount) {
+      Promise.resolve().then(() => this.componentDidMount());
+    }
+    if (this.componentWillUnmount) {
+      cleanup(() => this.componentWillUnmount());
+    }
+  }
 }
 
-class App extends Component { 
-  componentDidMount(){ console.log('componentDidMount')}  
-  componentWillUnmount(){ console.log('componentWillUnmount') } 
-} 
-
+class App extends Component {
+  componentDidMount() {
+    console.log("componentDidMount");
+  }
+  componentWillUnmount() {
+    console.log("componentWillUnmount");
+  }
+}
 ```
-
 
 ### Lazily Loading a Component
 
@@ -115,13 +121,15 @@ render(App, document.body);
 ## Non-precompiled environments
 
 Alternatively supports Tagged Template Literals or HyperScript for non-precompiled environments by installing the companion library and including variants:
+
 ```js
-import { html } from 'mobx-jsx/html'; // or
-import { h } from 'mobx-jsx/h';
+import { html } from "mobx-jsx/html"; // or
+import { h } from "mobx-jsx/h";
 ```
+
 There is a small performance overhead of using these runtimes but the performance is still very impressive. Tagged Template solution is much more performant that the HyperScript version, but HyperScript opens up compatibility with some companion tooling like:
 
-* [HyperScript Helpers](https://github.com/ohanhi/hyperscript-helpers) Use an element as functions DSL
-* [Babel Plugin HTM](https://github.com/developit/htm/tree/master/packages/babel-plugin-htm) Transpile Tagged Template Literals to HyperScript for IE11 compatibility
+- [HyperScript Helpers](https://github.com/ohanhi/hyperscript-helpers) Use an element as functions DSL
+- [Babel Plugin HTM](https://github.com/developit/htm/tree/master/packages/babel-plugin-htm) Transpile Tagged Template Literals to HyperScript for IE11 compatibility
 
 Further documentation available at: [Lit DOM Expressions](https://github.com/ryansolid/lit-dom-expressions) and [Hyper DOM Expressions](https://github.com/ryansolid/hyper-dom-expressions).
