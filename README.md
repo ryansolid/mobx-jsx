@@ -97,6 +97,43 @@ class App extends Component {
 }
 ```
 
+### Mounting
+
+Mounting can be done by functions and not class components. However you may use an arrow function as follows:
+
+```jsx
+import { render, Component } from "mobx-jsx";
+
+class App extends Component {
+  render() {
+    return <div>Mounted</div>
+  }
+}
+
+render(() => <App />, document.body);
+```
+
+### References
+
+`ref` assigns to a variable and `forwardRef` uses a function form. 
+
+
+```jsx
+let elRef;
+Promise.resolve().then(() => elRef.clientWidth);
+<div ref={elRef} />
+```
+
+or 
+
+```jsx
+let elRef;
+Promise.resolve().then(() => elRef.clientWidth);
+<div forwardRef={ref => elRef = ref} />
+```
+
+Note: Promise.resolve().then is used as `mount` see the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for furter information.
+
 ### Lazily Loading a Component
 
 ```jsx
