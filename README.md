@@ -66,9 +66,9 @@ const list = observable(["Alpha", "Beta", "Gamma"]);
 
 ### Lifecycles
 
-Unlike React `render` only runs once, so you may not need to split in functions or methods your Lifecycles, all the initialization code could be set on `render`. See the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for furter information.
+Unlike React `render` only runs once, so you may not need to split in functions or methods your Lifecycles, all the initialization code could be set on `render`. See the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for further information.
 
-However, you may emulate `componentDidMount` and `componentWillUnmount`. The microtak`Promise` resolution will be after mount and `cleanup` runs at the beginning of re-evaluation so the elements aren't removed yet.
+However, you may emulate `componentDidMount` and `componentWillUnmount`. The microtask `Promise` resolution will be after mount and `cleanup` runs at the beginning of re-evaluation so the elements aren't removed yet.
 
 #### Example
 
@@ -124,7 +124,7 @@ Promise.resolve().then(() => elRef.clientWidth);
 <div ref={elRef} />
 ```
 
-Note: Promise.resolve().then is used as `mount` see the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for furter information.
+Note: Promise.resolve().then is used as `mount` see the issue [Lifecycles](https://github.com/ryansolid/mobx-jsx/issues/23) for further information.
 
 ### Lazily Loading a Component
 
