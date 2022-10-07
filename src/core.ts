@@ -2,7 +2,8 @@ export {
   root,
   effect,
   memo,
-  createComponent
+  createComponent,
+  untrack
 } from "./lib"
 
 export const sharedConfig = {};

@@ -1,5 +1,14 @@
-import { autorun, computed, untracked, $mobx, IObservableArray, observable, action, IObservableValue } from "mobx";
-import type { JSX } from "./jsx"
+import {
+  autorun,
+  computed,
+  untracked,
+  $mobx,
+  IObservableArray,
+  observable,
+  action,
+  IObservableValue
+} from "mobx";
+import type { JSX } from "./jsx";
 
 type ContextOwner = {
   disposables: any[];
@@ -29,7 +38,7 @@ Component.prototype.isClassComponent = true;
 export function root<T>(fn: (dispose: () => void) => T) {
   let d: any[], ret: T;
   globalContext = {
-    disposables: d = [],
+    disposables: (d = []),
     owner: globalContext
   };
   ret = untracked(() =>
@@ -84,7 +93,7 @@ export function memo<T>(fn: () => T, equal?: boolean) {
 export function createSelector<T, U extends T>(
   source: () => T,
   fn: (a: U, b: T) => boolean = (a, b) => a === b
-){
+) {
   let subs = new Map();
   let v: T;
   effect((p?: U) => {
@@ -92,7 +101,7 @@ export function createSelector<T, U extends T>(
     const keys = [...subs.keys()];
     for (let i = 0, len = keys.length; i < len; i++) {
       const key = keys[i];
-      if (fn(key, v) || p !== undefined && fn(key, p)) {
+      if (fn(key, v) || (p !== undefined && fn(key, p))) {
         const o = subs.get(key);
         o.set(null);
       }
@@ -101,10 +110,11 @@ export function createSelector<T, U extends T>(
   });
   return (key: U) => {
     let l: IObservableValue<U> & { _count?: number };
-    if (!(l = subs.get(key))) subs.set(key, l = observable.box<U>());
+    if (!(l = subs.get(key)))
+      subs.set(key, (l = observable.box<U>() as IObservableValue<U> & { _count?: number }));
     l.get();
-    l._count ? (l._count++) : (l._count = 1);
-    cleanup(() => l._count! > 1 ? l._count!-- : subs.delete(key))
+    l._count ? l._count++ : (l._count = 1);
+    cleanup(() => (l._count! > 1 ? l._count!-- : subs.delete(key)));
     return fn(key, v);
   };
 }
@@ -115,15 +125,14 @@ type ComponentConstructor<P> =
   | FunctionComponent<P>
   | (new (props: PropsWithChildren<P>) => JSX.Element);
 
-export type ComponentProps<
-  T extends keyof JSX.IntrinsicElements | ComponentConstructor<any>
-> = T extends ComponentConstructor<infer P>
-  ? P
-  : T extends keyof JSX.IntrinsicElements
-  ? JSX.IntrinsicElements[T]
-  : {};
+export type ComponentProps<T extends keyof JSX.IntrinsicElements | ComponentConstructor<any>> =
+  T extends ComponentConstructor<infer P>
+    ? P
+    : T extends keyof JSX.IntrinsicElements
+    ? JSX.IntrinsicElements[T]
+    : {};
 
-export function createComponent<T>(
+export function createComponent<T extends { children?: JSX.Element }>(
   Comp: Component<T> & FunctionComponent<T>,
   props: T
 ): JSX.Element {
@@ -139,14 +148,16 @@ export function createComponent<T>(
 // dynamic import to support code splitting
 export function lazy<T extends Function>(fn: () => Promise<{ default: T }>) {
   return (props: object) => {
-    let Comp: T;
-    const result = observable.box(),
+    let Comp: T | undefined;
+    const result = observable.box<T>(),
       update = action((component: { default: T }) => result.set(component.default));
     fn().then(update);
-    const rendered = computed(() => (Comp = result.get()) && untracked(() => Comp(props)));
+    const rendered = computed(() => (Comp = result.get()) && untracked(() => Comp!(props)));
     return () => rendered.get();
   };
 }
+
+export { untracked as untrack };
 
 export function splitProps<T extends object, K1 extends keyof T>(
   props: T,
@@ -257,7 +268,7 @@ function createProvider(id: symbol) {
 
 // Modified version of mapSample from S-array[https://github.com/adamhaile/S-array] by Adam Haile
 export function map<T, U>(
-  list: IObservableArray<T> & { [$mobx]: any } | (() => Array<T>),
+  list: (IObservableArray<T> & { [$mobx]: any }) | (() => Array<T>),
   mapFn: (v: T, i: number) => U | any
 ) {
   let items = [] as T[],
@@ -269,7 +280,7 @@ export function map<T, U>(
     for (let i = 0, length = disposers.length; i < length; i++) disposers[i]();
   });
   return () => {
-    let newItems = fn ? (list as () => Array<T>)() : list as T[],
+    let newItems = fn ? (list as () => Array<T>)() : (list as T[]),
       i: number,
       j: number;
     !fn && (list as IObservableArray<T> & { [$mobx]: any })[$mobx].atom_.reportObserved();
